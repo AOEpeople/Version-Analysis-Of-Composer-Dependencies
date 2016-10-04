@@ -34,7 +34,7 @@ public class PropertyReaderTest {
 	public void shouldThrowNullPointerExceptionWithInvalidConfigPath()
 	{
 		PropertyReader reader = PropertyReader.getInstance();
-		Properties config = reader.getConfig("/config_not_existing.properties");
+		Properties config = reader.getConfig("/not_existing_config.properties");
 		assertEquals("/var/log/jenkins/jenkins.log", config.getProperty("jenkins-log"));
 	}
 }
