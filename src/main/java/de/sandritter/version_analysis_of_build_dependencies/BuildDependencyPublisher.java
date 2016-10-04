@@ -253,7 +253,7 @@ public class BuildDependencyPublisher extends Recorder {
 	private void analyseBuild(AbstractBuild<?, ?> build, BuildData buildData)
 	{
 		try {
-			build.addAction(new IntegrationAnalyser(pluginName, buildData, dataLoader));
+			build.addAction(new IntegrationAnalyser(build, pluginName, buildData, dataLoader));
 			logger.log(Logger.LABEL + Logger.SUCCESS
 					+ "analysis of all installed components of this build have been successful");
 		} catch (Exception e) {

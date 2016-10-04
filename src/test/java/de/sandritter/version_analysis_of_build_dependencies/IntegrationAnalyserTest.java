@@ -4,6 +4,8 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import static org.mockito.Mockito.*;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -16,6 +18,7 @@ import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Result.
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Transfer.BuildData;
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Transfer.BuildDataBuilder;
 import de.sandritter.version_analysis_of_build_dependencies.Persistence.Database.Factory.DataLoaderFactory;
+import hudson.model.AbstractBuild;
 
 public class IntegrationAnalyserTest {
 
@@ -23,7 +26,8 @@ public class IntegrationAnalyserTest {
 	private DataLoader dataLoader;
 	private BuildData buildData;
 	private IntegrationAnalyser analyzer;
-
+	private AbstractBuild<?, ?> build;
+	
 	@Before
 	public void setUp() throws Exception
 	{
@@ -32,11 +36,13 @@ public class IntegrationAnalyserTest {
 
 		ClassLoader loader = getClass().getClassLoader();
 		String dbPath = loader.getResource("jevi.db").getPath();
-
+		
+		this.build = mock(AbstractBuild.class);
+		
 		Injector injector = Guice.createInjector(new PersistenceModule());
 		DataLoaderFactory dataLoaderFactory = injector.getInstance(DataLoaderFactory.class);
 		this.dataLoader = dataLoaderFactory.create(dbPath);
-		this.analyzer = new IntegrationAnalyser("BuildDependency", buildData, dataLoader);
+		this.analyzer = new IntegrationAnalyser(build, "BuildDependency", buildData, dataLoader);
 	}
 
 	@Test
@@ -76,7 +82,12 @@ public class IntegrationAnalyserTest {
 	public void testIntegrationAnalysisFailure() throws Exception
 	{
 		@SuppressWarnings("unused")
-		IntegrationAnalyser analyzer = new IntegrationAnalyser("TestPlugin", buildDataBuilder.getDefectMock(), dataLoader);
+		IntegrationAnalyser analyzer = new IntegrationAnalyser(
+				build, 
+				"TestPlugin", 
+				buildDataBuilder.getDefectMock(), 
+				dataLoader
+		);
 	}
 	
 	@Test

@@ -3,6 +3,7 @@ package de.sandritter.version_analysis_of_build_dependencies;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Properties;
 
 import org.kohsuke.stapler.StaplerProxy;
 
@@ -15,8 +16,11 @@ import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Result.
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Transfer.BuildData;
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Transfer.Interface.Transferable;
 import de.sandritter.version_analysis_of_build_dependencies.Mapping.Enum.DependencyType;
+import de.sandritter.version_analysis_of_build_dependencies.Util.PropertyReader;
 import hudson.PluginWrapper;
+import hudson.model.AbstractBuild;
 import hudson.model.Action;
+import hudson.model.Result;
 import jenkins.model.Jenkins;
 
 /**
@@ -37,17 +41,24 @@ public class IntegrationAnalyser implements Action, StaplerProxy {
 	private AnalyseResult analyseResult;
 	public static final String SUB_URL = "intregration-analysis";
 	private String pluginName;
+	private PropertyReader propertyReader;
 
 	/** 
 	 * @param buildData {@link BuildData}
 	 * @param dataLoader {@link DataLoader}
 	 * @throws Exception in case the integration analysis failed
 	 */
-	public IntegrationAnalyser(String pluginName, BuildData buildData, DataLoader dataLoader) throws Exception
-	{
+	public IntegrationAnalyser(
+			AbstractBuild<?, ?> build, 
+			String pluginName, 
+			BuildData buildData, 
+			DataLoader dataLoader
+	) throws Exception {
 		this.dataLoader = dataLoader;
 		this.analyseResult = analyse(buildData);
 		this.pluginName = pluginName;
+		this.propertyReader = PropertyReader.getInstance();
+		setBuildResult(build);
 	}
 
 	/**
@@ -73,8 +84,8 @@ public class IntegrationAnalyser implements Action, StaplerProxy {
 
 		// add analysis results about dependencies of this build
 		for (ComponentSummary c : totalSet.values()) {
-			BuildSummary build = loadBuildByReference(c.getReference());
-			DependencyResult depResult = analyseDependency(build, c, totalSet, result);
+			BuildSummary buildSummary = loadBuildByReference(c.getReference());
+			DependencyResult depResult = analyseDependency(buildSummary, c, totalSet, result);
 			if (depResult.isExternal()) {
 				depResult.setAnalyseTarget(c);
 			}
@@ -210,6 +221,20 @@ public class IntegrationAnalyser implements Action, StaplerProxy {
 		Transferable t =  dataLoader.loadDependencies(buildId, type);
 		Map<String, ComponentSummary> map = (Map<String, ComponentSummary>) t.getMap(ComponentSummary.class);
 		return map;
+	}
+	
+	/**
+	 * 
+	 * @param build
+	 */
+	private void setBuildResult(AbstractBuild<?, ?> build)
+	{
+		float percentageWarnings = Float.parseFloat(analyseResult.getPercentageWarnings());
+		Properties properties = propertyReader.getConfig("/config.properties");
+		if (percentageWarnings > Float.parseFloat(properties.getProperty("percentage-unstable"))) {
+			build.setResult(Result.UNSTABLE);
+		}
+		build.setResult(Result.SUCCESS);
 	}
 
 	@Override

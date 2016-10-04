@@ -81,6 +81,9 @@ public class AnalyseResult implements Serializable {
 	 */
 	public String getPercentageOk()
 	{
+		if (depResults.size() == 0) {
+			return "0";
+		}
 		double percentage = (depResults.size() - amountOfDependencyResultsWithDisparity) * 100 / depResults.size();
 		return Double.toString(round(percentage, 2));
 	}
@@ -93,6 +96,9 @@ public class AnalyseResult implements Serializable {
 	 */
 	public String getPercentageWarnings()
 	{
+		if (depResults.size() == 0) {
+			return "0";
+		}
 		double percentage = amountOfDependencyResultsWithDisparity * 100 / depResults.size();
 		return Double.toString(round(percentage, 2));
 	}
