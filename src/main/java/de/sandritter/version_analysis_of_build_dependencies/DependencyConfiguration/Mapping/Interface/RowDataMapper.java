@@ -17,7 +17,9 @@ public interface RowDataMapper {
 	 * maps row data to data access objects
 	 * 
 	 * @param buildData {@link BuildData}
+	 * @param transport {@link Transferable}
 	 * @return Transferable {@link Transferable}
+	 * @throws DataMappingFailedException in case mapping failed
 	 */
 	public Transferable mapData(BuildData buildData, Transferable transport) throws DataMappingFailedException;
 }

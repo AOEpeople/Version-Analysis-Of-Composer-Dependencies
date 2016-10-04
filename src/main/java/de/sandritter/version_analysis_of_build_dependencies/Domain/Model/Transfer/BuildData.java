@@ -34,7 +34,7 @@ public class BuildData {
 	/**
 	 * time stamp of the time when the build started
 	 */
-	private long timestamp = 1;
+	private long timestamp = -1;
 
 	/**
 	 * checked out version of the source code checked out from the repository
@@ -64,16 +64,6 @@ public class BuildData {
 	private String jenkinsUrl;
 	
 	private String jobUrl;
-
-	public String getBuildCategory()
-	{
-		return buildCategory;
-	}
-
-	public void setBuildCategory(String buildCategory)
-	{
-		this.buildCategory = buildCategory;
-	}
 
 	public String getBuildId()
 	{
@@ -172,10 +162,7 @@ public class BuildData {
 	 */
 	public String getFormattedTime()
 	{
-		if (timestamp != -1) {
-			return DateFormatter.getFormattedTime(timestamp);
-		}
-		return "no date available";
+		return DateFormatter.getFormattedTime(timestamp);
 	}
 
 	public String getJenkinsUrl()

@@ -3,6 +3,7 @@ package de.sandritter.version_analysis_of_build_dependencies.Persistence.Databas
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Map;
 
 import org.junit.Before;
@@ -48,6 +49,56 @@ public class DBLoaderTest {
 		assertEquals(1, build.getBuildNumber());
 		assertEquals("Job3", build.getJobName());
 		assertEquals("https://jenkins-url/job-url/job-name/buildnumber3", build.getJobUrl());
+	}
+	
+	@Test (expected=SQLException.class)
+	public void shouldThrowExceptionWhileLoadingBuild() throws Exception
+	{
+		Injector injector = Guice.createInjector(new PersistenceModule());
+		DataLoaderFactory dataLoaderFactory = injector.getInstance(DataLoaderFactory.class);
+		this.dataLoader = dataLoaderFactory.create("invalidDBPath");
+		@SuppressWarnings("unused")
+		Transferable t = dataLoader.loadBuild("invalid");
+	}
+	
+	@Test (expected=SQLException.class)
+	public void shouldThrowExceptionWhileLoadingMainComponent() throws Exception
+	{
+		Injector injector = Guice.createInjector(new PersistenceModule());
+		DataLoaderFactory dataLoaderFactory = injector.getInstance(DataLoaderFactory.class);
+		this.dataLoader = dataLoaderFactory.create("invalidDBPath");
+		@SuppressWarnings("unused")
+		Transferable t = dataLoader.loadMainComponent("invalid");
+	}
+	
+	@Test (expected=SQLException.class)
+	public void shouldThrowExceptionWhileLoadingDependencies() throws Exception
+	{
+		Injector injector = Guice.createInjector(new PersistenceModule());
+		DataLoaderFactory dataLoaderFactory = injector.getInstance(DataLoaderFactory.class);
+		this.dataLoader = dataLoaderFactory.create("invalidDBPath");
+		@SuppressWarnings("unused")
+		Transferable t = dataLoader.loadDependencies("invalid", null);
+	}
+	
+	@Test (expected=SQLException.class)
+	public void shouldThrowExceptionWhileLoadingDependentComponents() throws Exception
+	{
+		Injector injector = Guice.createInjector(new PersistenceModule());
+		DataLoaderFactory dataLoaderFactory = injector.getInstance(DataLoaderFactory.class);
+		this.dataLoader = dataLoaderFactory.create("invalidDBPath");
+		@SuppressWarnings("unused")
+		Transferable t = dataLoader.loadDependentComponents("invalid");
+	}
+	
+	@Test (expected=Exception.class)
+	public void shouldThrowExceptionWhileEstablishingConnection() throws Exception
+	{
+		Injector injector = Guice.createInjector(new PersistenceModule());
+		DataLoaderFactory dataLoaderFactory = injector.getInstance(DataLoaderFactory.class);
+		this.dataLoader = dataLoaderFactory.create("invalidDBPath");
+		@SuppressWarnings("unused")
+		Transferable t = dataLoader.loadDependentComponents("invalid");
 	}
 
 	@Test

@@ -42,9 +42,9 @@ public class Build {
 	 */
 	public Build(String buildId, long timestamp, int number, String jobName, String jobUrl)
 	{
-		this.buildId = buildId;
-		this.timestamp = timestamp;
-		this.number = number;
+		this.setBuildId(buildId);
+		this.setTimestamp(timestamp);
+		this.setNumber(number);
 		this.setJobName(jobName);
 		this.setJobUrl(jobUrl);
 	}

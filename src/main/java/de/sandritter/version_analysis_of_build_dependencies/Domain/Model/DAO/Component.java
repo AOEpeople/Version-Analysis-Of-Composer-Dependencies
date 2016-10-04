@@ -38,26 +38,31 @@ public class Component implements Serializable{
 	 * @param sourceUrl - version control source url
 	 */
 	public Component(String name, String sourceType, String sourceUrl){
-		this.name = name;
-		this.sourceType = sourceType;
-		this.sourceUrl = sourceUrl;
+		this.setName(name);
+		this.setSourceType(sourceType);
+		this.setSourceUrl(sourceUrl);
 	}
 
 	public String getName() {
 		return name;
 	}
+	
 	public void setName(String name) {
 		this.name = name;
 	}
+	
 	public String getSourceType() {
 		return sourceType;
 	}
+	
 	public void setSourceType(String sourceType) {
 		this.sourceType = sourceType;
 	}
+	
 	public String getSourceUrl() {
 		return sourceUrl;
 	}
+	
 	public void setSourceUrl(String sourceUrl) {
 		this.sourceUrl = sourceUrl;
 	}

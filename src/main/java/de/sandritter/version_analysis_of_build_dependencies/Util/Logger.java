@@ -23,8 +23,7 @@ public class Logger {
 	private Logger(){}
 
 	/**
-	 * @param listener
-	 *            {@link BuildListener}
+	 * @param listener {@link BuildListener}
 	 * @return
 	 */
 	public static Logger getInstance(PrintStream stream)
@@ -99,8 +98,7 @@ public class Logger {
 	/**
 	 * logs the final process status of this plugin
 	 * 
-	 * @param start
-	 *            timestamp of the time when the peform method was invoked
+	 * @param start - timestamp of the time when the peform method was invoked
 	 */
 	public void logFinalProcessStatus()
 	{

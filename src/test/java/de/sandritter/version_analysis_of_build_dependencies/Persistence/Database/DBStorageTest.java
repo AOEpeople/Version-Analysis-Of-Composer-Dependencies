@@ -34,10 +34,23 @@ public class DBStorageTest {
 		String dbPath = loader.getResource("jevi.db").getPath();
 
 		Injector injector = Guice.createInjector(new PersistenceModule());
-		DataStorageFactory dataLoaderFactory = injector.getInstance(DataStorageFactory.class);
-		this.dataStorage = dataLoaderFactory.create(dbPath);
+		DataStorageFactory dataStorageFactory = injector.getInstance(DataStorageFactory.class);
+		this.dataStorage = dataStorageFactory.create(dbPath);
 		
 		this.dataProvider = new TestDataProvider();
+	}
+	
+	@Test (expected=Exception.class) 
+	public void shouldThrowExceptionIfConnectionCanNotBeEstablished() throws Exception
+	{
+		String dbPath = "/var/test/invalid";
+
+		Injector injector = Guice.createInjector(new PersistenceModule());
+		DataStorageFactory dataStorageFactory = injector.getInstance(DataStorageFactory.class);
+		this.dataStorage = dataStorageFactory.create(dbPath);
+		
+		Transferable t = dataProvider.getStorageData("b01", 1, 4);
+		dataStorage.storeData(t);
 	}
 
 	@Test

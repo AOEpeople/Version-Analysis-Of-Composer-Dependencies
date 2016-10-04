@@ -1,13 +1,11 @@
 package de.sandritter.version_analysis_of_build_dependencies.Mapping.Mapper;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 import de.sandritter.version_analysis_of_build_dependencies.DependencyConfiguration.Mapping.Interface.DatabaseMapper;
-import de.sandritter.version_analysis_of_build_dependencies.DependencyConfiguration.Mapping.Interface.FutureImplementation;
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Result.Database.BuildSummary;
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Result.Database.ComponentSummary;
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Result.Database.DependentComponent;
@@ -50,63 +48,6 @@ public class SqliteDataMapper implements DatabaseMapper {
 			transport.setMap(cls, saveDependentComponent(result));
 		}
 		return transport;
-	}
-
-	@FutureImplementation
-	private String[] getColumnNameArray(ResultSet rs)
-	{
-		try {
-			ResultSetMetaData rm = rs.getMetaData();
-			String column[] = new String[rm.getColumnCount()];
-			for (int i = 1; i <= column.length; i++) {
-				String s = rm.getColumnName(i);
-				column[i - 1] = s;
-			}
-			return column;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	@FutureImplementation
-	private String[] getColumnTypeArray(ResultSet rs)
-	{
-		try {
-			ResultSetMetaData rm = rs.getMetaData();
-			String column[] = new String[rm.getColumnCount()];
-			for (int i = 1; i <= column.length; i++) {
-				String s = rm.getColumnTypeName(i);
-				column[i - 1] = s;
-			}
-			return column;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	@SuppressWarnings("unused")
-	@FutureImplementation
-	private Object mapResult(ResultSet rs, String[] columnName, String[] columnTypeName)
-	{
-		try {
-			while (rs.next()) {
-				for (int i = 0; i < columnName.length - 1; i++) {
-					Object o = rs.getObject(columnName[i]);
-					if (columnTypeName[i].toUpperCase().equals("TEXT")) {
-						String s = o.toString();
-					} else if (columnTypeName[i].toUpperCase().equals("LONG")) {
-						long l = (long) o;
-					} else if (columnTypeName[i].toUpperCase().equals("INT")) {
-						int j = (int) o;
-					}
-				}
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
 	}
 
 	/**

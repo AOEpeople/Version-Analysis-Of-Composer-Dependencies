@@ -45,10 +45,7 @@ public class DependentComponent {
 
 	public String getFormattedTime()
 	{
-		if (timeStamp != -1) {
-			return DateFormatter.getFormattedTime(timeStamp);
-		}
-		return "no date available";
+		return DateFormatter.getFormattedTime(timeStamp);
 	}
 
 	public String getBuildId()

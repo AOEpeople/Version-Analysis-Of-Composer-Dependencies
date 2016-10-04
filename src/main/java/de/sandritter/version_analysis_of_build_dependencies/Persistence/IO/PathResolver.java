@@ -1,9 +1,8 @@
-package de.sandritter.version_analysis_of_build_dependencies.Util;
+package de.sandritter.version_analysis_of_build_dependencies.Persistence.IO;
 
 import java.io.File;
 
 import de.sandritter.version_analysis_of_build_dependencies.Mapping.Enum.FileType;
-import de.sandritter.version_analysis_of_build_dependencies.Util.Interface.Resolver;
 
 /**
  * PathResolver.java

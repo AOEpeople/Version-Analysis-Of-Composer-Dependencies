@@ -35,6 +35,11 @@ public class SQliteLoader implements DataLoader {
 	 * mapper that maps the ResultSet to model objects {@link DatabaseMapper}
 	 */
 	private DatabaseMapper mapper;
+	
+	/**
+	 * class that holds queries for fetching data from database
+	 */
+	private SelectQueries queries;
 
 	/**
 	 * @param dbPath database path
@@ -45,6 +50,7 @@ public class SQliteLoader implements DataLoader {
 	{
 		this.dbPath = dbPath;
 		this.mapper = mapper;
+		this.queries = new SelectQueries();
 	}
 
 	/**
@@ -76,9 +82,9 @@ public class SQliteLoader implements DataLoader {
 			c = establishConnection();
 			String sql = "";
 			if (type == DependencyType.HIGH_LEVEL) {
-				sql = SelectQueries.highLevelDependencies;
+				sql = queries.highLevelDependencies;
 			} else if (type == DependencyType.ALL) {
-				sql = SelectQueries.allDependencies;
+				sql = queries.allDependencies;
 			}
 			stmt = c.prepareStatement(sql);
 			stmt.setString(1, value);
@@ -99,7 +105,7 @@ public class SQliteLoader implements DataLoader {
 		PreparedStatement stmt = null;
 		try {
 			c = establishConnection();
-			String sql = SelectQueries.buildOfMainDependency;
+			String sql = queries.buildOfMainDependency;
 			stmt = c.prepareStatement(sql);
 			stmt.setString(1, reference);
 
@@ -119,7 +125,7 @@ public class SQliteLoader implements DataLoader {
 		PreparedStatement stmt = null;
 		try {
 			c = establishConnection();
-			String sql = SelectQueries.mainComponent;
+			String sql = queries.mainComponent;
 			stmt = c.prepareStatement(sql);
 			stmt.setString(1, buildId);
 			ResultSet rs = stmt.executeQuery();
@@ -137,7 +143,7 @@ public class SQliteLoader implements DataLoader {
 		PreparedStatement stmt = null;
 		try {
 			c = establishConnection();
-			String sql = SelectQueries.dependentComponents;
+			String sql = queries.dependentComponents;
 			stmt = c.prepareStatement(sql);
 			stmt.setString(1, dependencyName);
 

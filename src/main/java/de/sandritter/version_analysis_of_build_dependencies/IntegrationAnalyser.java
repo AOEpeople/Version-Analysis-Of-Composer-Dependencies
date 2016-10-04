@@ -15,7 +15,6 @@ import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Result.
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Transfer.BuildData;
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Transfer.Interface.Transferable;
 import de.sandritter.version_analysis_of_build_dependencies.Mapping.Enum.DependencyType;
-import de.sandritter.version_analysis_of_build_dependencies.Persistence.Database.Exception.LoadingFailedException;
 import hudson.PluginWrapper;
 import hudson.model.Action;
 import jenkins.model.Jenkins;
@@ -37,16 +36,18 @@ public class IntegrationAnalyser implements Action, StaplerProxy {
 	private DataLoader dataLoader;
 	private AnalyseResult analyseResult;
 	public static final String SUB_URL = "intregration-analysis";
+	private String pluginName;
 
 	/** 
 	 * @param buildData {@link BuildData}
 	 * @param dataLoader {@link DataLoader}
-	 * @throws Exception
+	 * @throws Exception in case the integration analysis failed
 	 */
-	public IntegrationAnalyser(BuildData buildData, DataLoader dataLoader) throws Exception
+	public IntegrationAnalyser(String pluginName, BuildData buildData, DataLoader dataLoader) throws Exception
 	{
 		this.dataLoader = dataLoader;
 		this.analyseResult = analyse(buildData);
+		this.pluginName = pluginName;
 	}
 
 	/**
@@ -220,8 +221,7 @@ public class IntegrationAnalyser implements Action, StaplerProxy {
 	@Override
 	public String getIconFileName()
 	{
-		PluginWrapper wrapper = Jenkins.getInstance().getPluginManager().whichPlugin(BuildDependencyPublisher.class);
-		return "plugin/" + wrapper.getShortName() + "/images/logo.png";
+		return "plugin/" + pluginName + "/images/logo.png";
 	}
 
 	@Override
@@ -233,7 +233,7 @@ public class IntegrationAnalyser implements Action, StaplerProxy {
 	@Override
 	public String getUrlName()
 	{
-		return "intregration-analysis";
+		return "integration-analysis";
 	}
 
 	public AnalyseResult getAnalyse()

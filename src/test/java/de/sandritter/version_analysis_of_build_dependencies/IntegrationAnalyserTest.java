@@ -22,9 +22,10 @@ public class IntegrationAnalyserTest {
 	private BuildDataBuilder buildDataBuilder;
 	private DataLoader dataLoader;
 	private BuildData buildData;
+	private IntegrationAnalyser analyzer;
 
 	@Before
-	public void setUp()
+	public void setUp() throws Exception
 	{
 		buildDataBuilder = new BuildDataBuilder();
 		this.buildData = buildDataBuilder.getLightMock();
@@ -35,12 +36,12 @@ public class IntegrationAnalyserTest {
 		Injector injector = Guice.createInjector(new PersistenceModule());
 		DataLoaderFactory dataLoaderFactory = injector.getInstance(DataLoaderFactory.class);
 		this.dataLoader = dataLoaderFactory.create(dbPath);
+		this.analyzer = new IntegrationAnalyser("BuildDependency", buildData, dataLoader);
 	}
 
 	@Test
 	public void testIntegrationAnalysis() throws Exception
 	{
-		IntegrationAnalyser analyzer = new IntegrationAnalyser(buildData, dataLoader);
 		AnalyseResult result = analyzer.getAnalyse();
 		assertEquals(5, result.getDepResults().size());
 		for (DependencyResult depResult : result.getDepResults()) {
@@ -75,6 +76,30 @@ public class IntegrationAnalyserTest {
 	public void testIntegrationAnalysisFailure() throws Exception
 	{
 		@SuppressWarnings("unused")
-		IntegrationAnalyser analyzer = new IntegrationAnalyser(buildDataBuilder.getDefectMock(), dataLoader);
+		IntegrationAnalyser analyzer = new IntegrationAnalyser("TestPlugin", buildDataBuilder.getDefectMock(), dataLoader);
+	}
+	
+	@Test
+	public void shouldGetIconFileName() throws Exception
+	{
+		assertEquals("plugin/BuildDependency/images/logo.png", analyzer.getIconFileName());
+	}
+	
+	@Test
+	public void shouldGetDisplayName()
+	{
+		assertEquals("Integration Analysis", analyzer.getDisplayName());
+	}
+	
+	@Test
+	public void shouldGetUrlName()
+	{
+		assertEquals("integration-analysis", analyzer.getUrlName());
+	}
+	
+	@Test
+	public void shouldGetTarget()
+	{
+		assertNull(analyzer.getTarget());
 	}
 }

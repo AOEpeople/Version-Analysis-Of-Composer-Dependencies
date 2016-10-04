@@ -18,14 +18,11 @@ import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Transfe
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Transfer.Transport;
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Transfer.Interface.Transferable;
 import de.sandritter.version_analysis_of_build_dependencies.Persistence.Database.SQliteLoader;
-import de.sandritter.version_analysis_of_build_dependencies.Util.PropertyReader;
 
 public class DependentComponentResolverTest {
 	
 	private BuildData buildData;
-	private Map<String, DependentComponent> map;
 	public final static String SUB_URL = "dependency-resolver";
-	private PropertyReader propertyReader;
 	private DataLoader dataLoader;
 	private DependentComponentResolver dependentComponentResolver;
 	
@@ -58,7 +55,7 @@ public class DependentComponentResolverTest {
 		when(dataLoader.loadMainComponent(buildData.getBuildId())).thenReturn(t);
 		when(dataLoader.loadDependentComponents("Warenkorb")).thenReturn(t2);
 		
-		this.dependentComponentResolver = new DependentComponentResolver(dataLoader, buildData);
+		this.dependentComponentResolver = new DependentComponentResolver("TestPlugin",dataLoader, buildData);
 	}
 
 	@Test
@@ -86,10 +83,10 @@ public class DependentComponentResolverTest {
 	}
 	
 	@Test
-	public void shouldGetIconFileName() throws Exception
+	public void shouldGetIconFileName()
 	{
-		// user spy to mock PluginWrapper
-		//System.out.println(dependentComponentResolver.getIconFileName());
+		assertEquals("plugin/TestPlugin/images/logo.png", dependentComponentResolver.getIconFileName());
+		
 	}
 	
 	@Test

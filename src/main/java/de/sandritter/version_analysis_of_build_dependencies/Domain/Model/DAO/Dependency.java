@@ -31,8 +31,8 @@ public class Dependency {
 	 */
 	public Dependency(String reference, String buildId, String type)
 	{
-		this.reference = reference;
-		this.buildId = buildId;
+		this.setReference(reference);
+		this.setBuildId(buildId);
 		this.setType(type);
 	}
 

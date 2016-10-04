@@ -33,11 +33,6 @@ public class ComponentSummary implements Cloneable {
 	private String buildId;
 
 	/**
-	 * name of a jenkins-build-job
-	 */
-	private String jobName;
-
-	/**
 	 * dependency type - main component / dependency
 	 */
 	private String dependencyType;
@@ -127,16 +122,6 @@ public class ComponentSummary implements Cloneable {
 		this.sourceType = sourceType;
 	}
 
-	public String getJobName()
-	{
-		return jobName;
-	}
-
-	public void setJobName(String jobName)
-	{
-		this.jobName = jobName;
-	}
-
 	public long getTimestamp()
 	{
 		return timestamp;
@@ -157,10 +142,7 @@ public class ComponentSummary implements Cloneable {
 	 */
 	public String getFormattedTime()
 	{
-		if (timestamp != -1) {
-			return DateFormatter.getFormattedTime(timestamp);
-		}
-		return "no date available";
+		return DateFormatter.getFormattedTime(timestamp);
 	}
 
 	public void setTimestamp(long timestamp)

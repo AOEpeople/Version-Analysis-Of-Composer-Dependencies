@@ -13,18 +13,18 @@ import java.util.TimeZone;
 public class DateFormatter {
 	
 	/**
-	 * is formating a timestamp to readble time  dd.MM.yyyy  -  HH:mm:ss
+	 * is formating a timestamp to readble time  dd.MM.yyyy - HH:mm:ss
 	 * @param timestamp
 	 * @return formatted and readable time of the build-start
 	 */
 	public static String getFormattedTime(long timestamp){
 		if(timestamp != -1){			
-			Date date = new Date(timestamp); // *1000 is to convert seconds to milliseconds
-			SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.YYYY - HH:mm:ss"); // the format of your date
-			sdf.setTimeZone(TimeZone.getTimeZone("GMT")); // give a timezone reference for formating (see comment at the bottom
+			Date date = new Date(timestamp); 
+			SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.YYYY - HH:mm:ss"); 
+			sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 			String formattedDate = sdf.format(date);
 			return formattedDate;
 		} 
-		return "no date available";
+		return "no date available, timestamp value might be unset";
 	}
 }

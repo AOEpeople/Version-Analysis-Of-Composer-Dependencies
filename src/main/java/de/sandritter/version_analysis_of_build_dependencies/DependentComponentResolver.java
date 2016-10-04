@@ -11,9 +11,7 @@ import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Result.
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Transfer.BuildData;
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Transfer.Interface.Transferable;
 import de.sandritter.version_analysis_of_build_dependencies.Util.PropertyReader;
-import hudson.PluginWrapper;
 import hudson.model.Action;
-import jenkins.model.Jenkins;
 
 /**
  * BuildDependencyPublisher.java
@@ -35,12 +33,17 @@ public class DependentComponentResolver implements Action, StaplerProxy {
 	private Map<String, DependentComponent> map;
 	public final static String SUB_URL = "dependency-resolver";
 	private PropertyReader propertyReader;
+	private String pluginName;
 
-	public DependentComponentResolver(DataLoader dataLoader, BuildData buildData) throws Exception
-	{
+	public DependentComponentResolver(
+			String pluginName, 
+			DataLoader dataLoader, 
+			BuildData buildData
+	) throws Exception {
 		this.dataLoader = dataLoader;
 		this.buildData = buildData;
 		this.propertyReader = PropertyReader.getInstance();
+		this.pluginName = pluginName;
 		
 		resolveDependentComponents(buildData);
 	}
@@ -92,11 +95,7 @@ public class DependentComponentResolver implements Action, StaplerProxy {
 	@Override
 	public String getIconFileName()
 	{
-		PluginWrapper wrapper = Jenkins.
-				getInstance().
-				getPluginManager()
-				.whichPlugin(BuildDependencyPublisher.class);
-		return "plugin/" + wrapper.getShortName() + "/images/logo.png";
+		return "plugin/" + pluginName + "/images/logo.png";
 	}
 
 	@Override

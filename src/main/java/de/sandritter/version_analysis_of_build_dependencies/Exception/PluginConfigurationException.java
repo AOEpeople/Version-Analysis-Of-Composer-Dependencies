@@ -1,14 +1,6 @@
 package de.sandritter.version_analysis_of_build_dependencies.Exception;
 
 public class PluginConfigurationException extends Exception {
-
-	/**
-	 * @param message
-	 */
-	public PluginConfigurationException(String message)
-	{
-		super(message);
-	}
 	
 	/**
 	 * @param message

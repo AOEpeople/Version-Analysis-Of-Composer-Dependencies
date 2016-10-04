@@ -24,7 +24,7 @@ public interface DataLoader {
 
 	/**
 	 * is loading build-specific information from database
-	 * @param reference
+	 * @param reference - vcs reference
 	 * @return {@link Transferable}
 	 * @throws Exception in case the database fetch of build information failed
 	 */
@@ -34,14 +34,13 @@ public interface DataLoader {
 	 * is loading information about the main component of a build from database
 	 * @param value table identifier
 	 * @return {@link Transferable}
-	 * @throws SQLException
 	 * @throws Exception in case the database fetch of the main component failed
 	 */
 	public Transferable loadMainComponent(String value) throws Exception;
 	
 	/**
-	 * is loading information about dependent components of a builded component
-	 * @param dependencyName
+	 * is loading information about dependent components of a component
+	 * @param dependencyName dependency name
 	 * @return {@link Transferable}
 	 * @throws Exception in case the database fetch of dependent components failed
 	 */

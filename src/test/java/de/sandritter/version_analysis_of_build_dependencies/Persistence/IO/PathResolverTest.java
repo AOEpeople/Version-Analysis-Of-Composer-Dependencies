@@ -1,4 +1,4 @@
-package de.sandritter.version_analysis_of_build_dependencies.Util;
+package de.sandritter.version_analysis_of_build_dependencies.Persistence.IO;
 
 import static org.junit.Assert.assertEquals;
 
@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.sandritter.version_analysis_of_build_dependencies.Mapping.Enum.FileType;
-import de.sandritter.version_analysis_of_build_dependencies.Util.PathResolver;
+import de.sandritter.version_analysis_of_build_dependencies.Persistence.IO.PathResolver;
 
 public class PathResolverTest {
 	

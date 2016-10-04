@@ -31,12 +31,9 @@ public class Stand {
 	 * @param name  component name
 	 */
 	public Stand(String version, String reference, String name){
-		this.version = version;
-		this.reference = reference;
-		this.componentName = name;
-	}
-
-	public Stand() {
+		this.setVersion(version);
+		this.setReference(reference);
+		this.setComponentName(name);
 	}
 
 	public String getVersion() {

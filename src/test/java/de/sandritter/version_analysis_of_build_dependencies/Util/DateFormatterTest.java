@@ -20,7 +20,7 @@ public class DateFormatterTest {
 	{
 		long timestamp = -1;
 		String date = DateFormatter.getFormattedTime(timestamp);
-		assertEquals("no date available", date);
+		assertEquals("no date available, timestamp value might be unset", date);
 	}
 	
 	@Test

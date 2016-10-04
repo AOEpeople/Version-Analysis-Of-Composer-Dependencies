@@ -1,4 +1,4 @@
-package de.sandritter.version_analysis_of_build_dependencies.Util.Interface;
+package de.sandritter.version_analysis_of_build_dependencies.Persistence.IO;
 
 import de.sandritter.version_analysis_of_build_dependencies.Mapping.Enum.FileType;
 

@@ -19,11 +19,6 @@ public enum DependencyType {
         name = s;
     }
 
-    public boolean equalsName(String otherName) 
-    {
-        return (otherName == null) ? false : name.equals(otherName);
-    }
-
     @Override
 	public String toString() 
     {

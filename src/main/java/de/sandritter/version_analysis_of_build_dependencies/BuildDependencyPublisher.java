@@ -3,12 +3,9 @@ package de.sandritter.version_analysis_of_build_dependencies;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
-import org.apache.tools.ant.BuildException;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -26,19 +23,15 @@ import de.sandritter.version_analysis_of_build_dependencies.DependencyConfigurat
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Transfer.BuildData;
 import de.sandritter.version_analysis_of_build_dependencies.Domain.Model.Transfer.Interface.Transferable;
 import de.sandritter.version_analysis_of_build_dependencies.Exception.PluginConfigurationException;
-import de.sandritter.version_analysis_of_build_dependencies.Mapping.Enum.BuildEnvVars;
 import de.sandritter.version_analysis_of_build_dependencies.Mapping.Enum.FileType;
-import de.sandritter.version_analysis_of_build_dependencies.Mapping.Enum.SourceType;
 import de.sandritter.version_analysis_of_build_dependencies.Mapping.Exception.DataMappingFailedException;
 import de.sandritter.version_analysis_of_build_dependencies.Mapping.Facade.MappingFacade;
 import de.sandritter.version_analysis_of_build_dependencies.Persistence.Database.Factory.DataLoaderFactory;
 import de.sandritter.version_analysis_of_build_dependencies.Persistence.Database.Factory.DataStorageFactory;
-import de.sandritter.version_analysis_of_build_dependencies.Persistence.IO.Exception.FileDoesNotExistException;
-import de.sandritter.version_analysis_of_build_dependencies.Util.ListItemProvider;
+import de.sandritter.version_analysis_of_build_dependencies.Persistence.IO.PathResolver;
+import de.sandritter.version_analysis_of_build_dependencies.Persistence.IO.Resolver;
+import de.sandritter.version_analysis_of_build_dependencies.Util.BuildDataCollector;
 import de.sandritter.version_analysis_of_build_dependencies.Util.Logger;
-import de.sandritter.version_analysis_of_build_dependencies.Util.PathResolver;
-import de.sandritter.version_analysis_of_build_dependencies.Util.Interface.Resolver;
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -50,7 +43,7 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
-import hudson.util.ListBoxModel;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 /**
@@ -86,11 +79,6 @@ public class BuildDependencyPublisher extends Recorder {
 	 * path to the composer.json file
 	 */
 	private final String jsonPath;
-	
-	/**
-	 * workspace path of this build
-	 */
-	private String workspacePath;
 
 	/**
 	 * logger that logs all warnings and errors to console output
@@ -102,7 +90,11 @@ public class BuildDependencyPublisher extends Recorder {
 	private MappingFacade mappingFacade;
 	private DataLoader dataLoader;
 	private DataStorage dataStorage;
-	private Properties config;
+	
+	private String pluginName = Jenkins.
+			getInstance().
+			getPluginManager()
+			.whichPlugin(BuildDependencyPublisher.class).getShortName();
 
 	/**
 	 * constructor retrieving the paths to the composer.lock an composer.json
@@ -124,20 +116,23 @@ public class BuildDependencyPublisher extends Recorder {
 		logger = Logger.getInstance(listener.getLogger());
 		logger.logPluginStart();
 		
-		this.workspacePath = loadWorkspacePath(build);
-		createModules(loadDatabasePath());
-
-		Map<FileType, File> dependencyReflectionFiles = loadDependencyReflectionFiles();
-		BuildData buildData = collectBuildData(build, listener);
+		String databasePath = loadDatabasePath();
+		createModules(databasePath);
+		
+		BuildDataCollector buildDataCollector = new BuildDataCollector(build, listener);
+		BuildData buildData = buildDataCollector.collectBuildData();
+		buildData.setDbPath(databasePath);
+		
+		String workspacePath = loadWorkspacePath(build);
+		Map<FileType, File> dependencyReflectionFiles = loadDependencyReflectionFiles(workspacePath);
+		
 		Transferable transport = mapData(buildData, dependencyReflectionFiles);
-
 		storeData(transport);
 
 		analyseBuild(build, buildData);
 		resolveDependencies(build, buildData);
 		logger.logFinalProcessStatus();
 	
-		
 		return true;
 	}
 	
@@ -149,15 +144,11 @@ public class BuildDependencyPublisher extends Recorder {
 	private String loadDatabasePath()
 	{
 		String databasePath = null;
-		try {
-			databasePath = getDescriptor().getDbPath();
-			if (databasePath == null){
-				throw new PluginConfigurationException("could not find database path configuration");
-			}
-		} catch (PluginConfigurationException e) {
+		databasePath = getDescriptor().getDbPath();
+		if (databasePath == null){
 			logger.logFailure(
-				new PluginConfigurationException("could not find databasePath", e), 
-				"Did you configure the database in your global jenkins settings? ;)"
+					new PluginConfigurationException("could not find databasePath",new IOException("could not resolve path")), 
+					"Did you configure the database in your global jenkins settings? ;)"
 			);
 		}
 		return databasePath;
@@ -169,7 +160,7 @@ public class BuildDependencyPublisher extends Recorder {
 	 * @param pathResolver {@link Resolver}
 	 * @return Map<{@link FileType},{@link File}>
 	 */
-	private Map<FileType, File> loadDependencyReflectionFiles()
+	private Map<FileType, File> loadDependencyReflectionFiles(String workspacePath)
 	{
 		PathResolver pathResolver = new PathResolver();
 		String finalLockPath = pathResolver.resolveAbsolutePath(FileType.COMPOSER_LOCK, workspacePath, lockPath);
@@ -200,7 +191,7 @@ public class BuildDependencyPublisher extends Recorder {
 			logger.logFailure(e, "LOADING WORKSPACE FAILED");
 		} catch (InterruptedException e) {
 			logger.logFailure(e, "LOADING WORKSPACE FAILED");
-		}
+		} 
 		return path;
 	}
 
@@ -215,8 +206,7 @@ public class BuildDependencyPublisher extends Recorder {
 		try {
 			transport = mappingFacade.mapRowData(buildData, files);
 			logger.log(
-				Logger.LABEL + 
-				Logger.SUCCESS + 
+				Logger.LABEL + Logger.SUCCESS + 
 				"collected build- and version-information of this build has been successfully mapped to data access objects"
 			);
 		} catch (DataMappingFailedException e1) {
@@ -232,7 +222,7 @@ public class BuildDependencyPublisher extends Recorder {
 	private void resolveDependencies(AbstractBuild<?, ?> build, BuildData buildData)
 	{
 		try {
-			build.addAction(new DependentComponentResolver(dataLoader, buildData));
+			build.addAction(new DependentComponentResolver(pluginName, dataLoader, buildData));
 			logger.log(Logger.LABEL + Logger.SUCCESS + "dependent components have been sucessfully resolved");
 		} catch (Exception e) {
 			logger.logFailure(e, "RESOLVING DEPENDENT COMPONENTS FAILED");
@@ -248,8 +238,7 @@ public class BuildDependencyPublisher extends Recorder {
 	{
 		try {
 			dataStorage.storeData(transport);
-			logger.log(
-					Logger.LABEL + Logger.SUCCESS + "data access objects have been successfully stored to database");
+			logger.log(Logger.LABEL + Logger.SUCCESS + "data access objects have been successfully stored to database");
 		} catch (Exception e) {
 			logger.logFailure(e, "STORAGE FAILED");
 		}
@@ -264,7 +253,7 @@ public class BuildDependencyPublisher extends Recorder {
 	private void analyseBuild(AbstractBuild<?, ?> build, BuildData buildData)
 	{
 		try {
-			build.addAction(new IntegrationAnalyser(buildData, dataLoader));
+			build.addAction(new IntegrationAnalyser(pluginName, buildData, dataLoader));
 			logger.log(Logger.LABEL + Logger.SUCCESS
 					+ "analysis of all installed components of this build have been successful");
 		} catch (Exception e) {
@@ -292,81 +281,6 @@ public class BuildDependencyPublisher extends Recorder {
 	}
 
 	/**
-	 * collects build specific data
-	 * 
-	 * @param build {@link AbstractBuild}
-	 * @param l {@link BuildListener}
-	 * @return BuildData object that holds all relevant build-specific data
-	 */
-	private BuildData collectBuildData(AbstractBuild<?, ?> build, BuildListener l)
-	{
-		BuildData data = new BuildData();
-		EnvVars env = null;
-		try {
-			env = build.getEnvironment(l);
-			data = readEnvironment(build, data, env);
-		} catch (IOException e) {
-			logger.logFailure(e, "LOADING ENVIRONMENT OF BUILD FAILED");
-		} catch (InterruptedException e) {
-			logger.logFailure(e, "LOADING ENVIRONMENT OF BUILD STOPPED");
-		} catch (Exception e) {
-			logger.logFailure(
-				new BuildException("FAILED reading from build environment",e),
-				"READING FROM BUILD ENVIRONMENT FAILED"
-			);
-		}
-		return data;
-	}
-	
-	private BuildData readEnvironment(AbstractBuild<?, ?> build, BuildData data, EnvVars env) throws Exception
-	{
-		data.setJobName(getStringEnvVar(env, BuildEnvVars.JOB_NAME));
-		data.setJenkinsUrl(getStringEnvVar(env, BuildEnvVars.JENKINS_URL));
-		data.setJobUrl(getStringEnvVar(env, BuildEnvVars.JOB_URL));
-		data.setBuildId(build.getId() + getStringEnvVar(env, BuildEnvVars.JOB_NAME));
-		data.setNumber(build.getNumber());
-		data.setTimestamp(build.getTimeInMillis());
-		data.setDbPath(getDescriptor().getDbPath());
-		injectVersionControlInfo(data, env);
-		return data;
-	}
-	
-	private String getStringEnvVar(EnvVars env, BuildEnvVars varType){
-		String var = "";
-		try {
-			var = env.get(varType.toString());
-		} catch (Exception e) {
-			logger.logFailure(e, "couldn't get build environment variable with following key: "+ varType.toString());
-			return "";
-		}
-		return var;
-	}
-
-	/**
-	 * checks if main component is stored in svn or git and adds the relevant
-	 * data to {@link BuildData}
-	 * 
-	 * @param data {@link BuildData}
-	 * @param env environment variables of {@link AbstractBuild}
-	 */
-	private void injectVersionControlInfo(BuildData data, EnvVars env)
-	{
-		String svnRevision = getStringEnvVar(env, BuildEnvVars.SVN_REVISION);
-		String gitRevision = getStringEnvVar(env, BuildEnvVars.GIT_COMMIT);
-		if (gitRevision != null) {
-			data.setSourceType(SourceType.GIT.toString());
-			data.setSourceUrl(getStringEnvVar(env, BuildEnvVars.GIT_URL));
-			data.setRevision(gitRevision);
-			data.setVersion(getStringEnvVar(env, BuildEnvVars.GIT_TAG_NAME));
-		} else if (svnRevision != null) {
-			data.setSourceType(SourceType.SVN.toString());
-			data.setSourceUrl(getStringEnvVar(env, BuildEnvVars.SVN_URL));
-			data.setRevision(svnRevision);
-			data.setVersion(svnRevision);
-		}
-	}
-
-	/**
 	 * is laoding a file by given path
 	 * 
 	 * @param path
@@ -383,7 +297,7 @@ public class BuildDependencyPublisher extends Recorder {
 		if (file.isFile()) {			
 			return file;
 		} else {
-			logger.logFailure(new FileDoesNotExistException("failed loading File by given path: " + path), "given file object is not a file");
+			logger.logFailure(new IOException("failed loading File by given path: " + path), "given file object is not a file");
 		}
 		return null;
 	}
@@ -418,58 +332,6 @@ public class BuildDependencyPublisher extends Recorder {
 		public DescriptorImpl()
 		{
 			load();
-		}
-
-		/**
-		 * is filling the selectItems of the dropdown list of the composer.lock
-		 * configuration
-		 * 
-		 * @param project {@link AbstractProject}
-		 * @return {@link ListBoxModel}
-		 */
-		public ListBoxModel doFillLockPathItems(@SuppressWarnings("rawtypes") @AncestorInPath AbstractProject project)
-		{
-			return ListItemProvider.fillPathItems(
-				getWorkspace(project), 
-				FileType.COMPOSER_LOCK
-			);
-		}
-
-		/**
-		 * is filling the selectItems of the dropdown list of the composer.json
-		 * configuration
-		 * 
-		 * @param project {@link AbstractProject}
-		 * @return {@link ListBoxModel}
-		 */
-		public ListBoxModel doFillJsonPathItems(@SuppressWarnings("rawtypes") @AncestorInPath AbstractProject project)
-		{
-			return ListItemProvider.fillPathItems(
-				getWorkspace(project), 
-				FileType.COMPOSER_JSON
-			);
-		}
-		
-		/**
-		 * extracting workspace path of last build
-		 * 
-		 * @param project {@link AbstractProject}
-		 * @return workspace path
-		 */
-		private Path getWorkspace(@SuppressWarnings("rawtypes") @AncestorInPath AbstractProject project)
-		{
-			AbstractBuild<?, ?> build = project.getLastBuild();
-			FilePath path = build.getWorkspace();
-			File root = null;
-			
-			try {
-				root = new File(path.toURI().toURL().getPath());
-			} catch (IOException e) {
-				//TODO
-			} catch (InterruptedException e) {
-				//TODO
-			}
-			return root.toPath();
 		}
 
 		/**
