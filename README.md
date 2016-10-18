@@ -1,7 +1,7 @@
 # Version-Analysis-Of-Build-Dependencies
 
 This plugin can be used for build jobs which install dependencies 
-via composer followed by testing those dependencies e.g through unit tests.
+via PHP composer followed by testing those dependencies e.g through unit tests.
 This plugin reads out the resulting composer.lock file which is located 
 inside the particular workspace of a build job. The composer.lock file includes all dependencies together with their installed versions.
 The dependencies and their versions will be stored related to the specific build to a sqlite database.
@@ -9,7 +9,7 @@ Hence, the database keeps track of the dependencies and their versions which are
 
 ## What is that plugin good for?
 
-Imagine you and your team are developing a bunch of components which are going to be integrated to one system using composer and continuous integration.
+Imagine you and your team are developing a bunch of components which are going to be integrated to one system using PHP composer and continuous integration.
 Some of the components have dependencies to other components of the system.
 The system has grown big, so the effort of maintaining a cross-system integration test is getting too high.
 

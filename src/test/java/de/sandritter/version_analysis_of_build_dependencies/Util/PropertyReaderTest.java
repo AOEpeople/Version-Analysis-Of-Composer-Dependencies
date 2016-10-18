@@ -29,12 +29,4 @@ public class PropertyReaderTest {
 		Properties config = reader.getConfig("/config.properties");
 		assertEquals("/var/log/jenkins/jenkins.log", config.getProperty("jenkins-log"));
 	}
-	
-	@Test(expected=NullPointerException.class)
-	public void shouldThrowNullPointerExceptionWithInvalidConfigPath()
-	{
-		PropertyReader reader = PropertyReader.getInstance();
-		Properties config = reader.getConfig("/not_existing_config.properties");
-		assertEquals("/var/log/jenkins/jenkins.log", config.getProperty("jenkins-log"));
-	}
 }

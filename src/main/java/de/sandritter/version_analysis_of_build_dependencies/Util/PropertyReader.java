@@ -29,7 +29,7 @@ public class PropertyReader {
     
     /**
      * @param configPath
-     * @return
+     * @return plugin config
      */
     public Properties getConfig(String configPath){
 		Properties config = new Properties();

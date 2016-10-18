@@ -50,6 +50,7 @@ public class IntegrationAnalyserTest {
 	{
 		AnalyseResult result = analyzer.getAnalyse();
 		assertEquals(5, result.getDepResults().size());
+		assertEquals("40.0", result.getPercentageOk());
 		for (DependencyResult depResult : result.getDepResults()) {
 			if (depResult.getAnalyseTarget().getComponentName().equals("Checkout")) {
 				assertEquals(3, depResult.getDisparities().size());
